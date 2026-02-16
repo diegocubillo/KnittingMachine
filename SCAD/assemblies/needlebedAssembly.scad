@@ -1,4 +1,4 @@
-include<../parts/needleBed.scad>;
+include<../parts/needlebed.scad>;
 include<../parts/backCover.scad>;
 include<../parts/spongeBar.scad>;
 include<../parts/carriageRest.scad>;

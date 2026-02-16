@@ -28,18 +28,21 @@ tolerance = 0.2; // allows a bit of room for parts that have to fit together; ad
 // (actual measurements, no tolerances)
 
 // - pan head 6-32 machine screws
-screwDiam = 3.45;
+// MARK: Imperial Screw (#6-32) - Replace with M3 dimensions
+screwDiam = 3.2;
 screwHeight = 18;
 screwHeadDiam = 6.75 + tolerance * 2; 
-screwHeadHeight = 2.55 + tolerance * 2;
+screwHeadHeight = 3.0 + tolerance * 2;
 nutWidth = 7.9;
 
 // - pan head 4-40 machine screws (M3 should also work where these are used)
-screwDiamSm = 2.79;
+// MARK: Imperial Screw (#4-40) - Replace with M3 dimensions
+screwDiamSm = 3.2;
 screwHeightSm = 14.62;
-screwHeadHeightSm = 2.41 + tolerance * 2;
-screwHeadDiamSm = 5.21 + tolerance * 2;
+screwHeadHeightSm = 3.0 + tolerance * 2;
+screwHeadDiamSm = 5.68 + tolerance * 2;
 nutHeight = 2.8;
+insertsDiameter = 4.0;
 
 // ---
 // Needle dimensions
@@ -80,6 +83,7 @@ screwPlacement = 3; // how many needles from edge of bed; min 2, max floor(numNe
 // Carriage dimensions
 // refer to technical sketch
 camHeight = BUTT_HEIGHT; // thickness of the tracks the needles ride along
+// MARK: Depth Check - 4mm is too thin for 6.7mm inserts. Suggest thickening or using nuts.
 camPlateHeight = 4; // plate behind the cams
 CAM_PLATE_WIDTH = 91 * 2; 
 CAM_PLATE_DEPTH = NEEDLE_BED_DEPTH - COMB + 6;
