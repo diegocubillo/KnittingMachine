@@ -72,7 +72,9 @@ def hole_zone(points, x):
     return out
 
 
-def compare(new, old, points, step=0.3):
+def compare(new, old, points, labels=None, step=0.3):
+    """labels: optional {(x, y): name} to group screw hole points (slots)."""
+    labels = labels or {}
     (n0, n1), (o0, o1) = bbox(new), bbox(old)
     shift = np.zeros(3)
     if np.abs((n1 - n0) - (o1 - o0)).max() < 0.05 and np.abs(n0 - o0).max() > 0.05:
@@ -109,6 +111,7 @@ def compare(new, old, points, step=0.3):
                 for px, py in points:
                     if abs(x - px) < HOLE_ZONE and b[0] < py + HOLE_ZONE and b[2] > py - HOLE_ZONE:
                         k = (round(px, 2), round(py, 2))
+                        k = labels.get(k, k)
                         z0, z1 = holes_hit.get(k, (np.inf, -np.inf))
                         holes_hit[k] = (min(z0, b[1]), max(z1, b[3]))
     vol = {k: round(v, 1) for k, v in vol.items()}
@@ -131,7 +134,8 @@ def compare(new, old, points, step=0.3):
         holes_hit = {}
     return {'verdict': verdict, 'aligned_shift': [round(v, 2) for v in shift], 'volumes_mm3': vol,
             'extent_elsewhere': ext,
-            'holes_to_open (x, y): z range': {f'{k}': [round(z, 2) for z in v] for k, v in sorted(holes_hit.items())}}
+            'holes_to_open (x, y): z range': {f'{k}': [round(z, 2) for z in v]
+                                              for k, v in sorted(holes_hit.items(), key=lambda kv: str(kv[0]))}}
 
 
 def main():
@@ -144,6 +148,15 @@ def main():
     a = ap.parse_args()
     probe = json.load(open(a.probe or os.path.join(a.new_dir, 'probe.json')))
     points = [tuple(p) for j in probe['joints'] for p in j['points']]
+    # the tension screw slots (left one and its mirror image) also count as
+    # screw holes: a wider slot can be filed out of a printed back plate
+    slot_points, labels = [], {}
+    if 'tension' in probe:
+        W = probe['params']['CAM_PLATE_WIDTH']
+        for x, y in probe['tension']['slot_path']:
+            for p in ((x, y), (W - x, y)):
+                slot_points.append(p)
+                labels[(round(p[0], 2), round(p[1], 2))] = 'tension slot (left)' if p[0] < W / 2 else 'tension slot (right)'
     mapping = {k: list(v) for k, v in DEFAULT_MAP.items()}
     for m in a.map:
         k, v = m.split('=', 1)
@@ -162,7 +175,12 @@ def main():
             res[part] = {'verdict': 'not printed (no STL found)'}
             continue
         print(f'comparing {part} <-> {name}', file=sys.stderr, flush=True)
-        res[part] = {'printed': name, **compare(load_stl(newf), old, points)}
+        # the slots are only in the back plate (the tension screw insert in the
+        # tension cam sits on the first point of the slot)
+        if part == 'backPlate':
+            res[part] = {'printed': name, **compare(load_stl(newf), old, slot_points + points, labels)}
+        else:
+            res[part] = {'printed': name, **compare(load_stl(newf), old, points)}
     for part, r in res.items():
         print(f'{part:17s} {r["verdict"]:12s} {r.get("printed", "")}')
         if 'volumes_mm3' in r:

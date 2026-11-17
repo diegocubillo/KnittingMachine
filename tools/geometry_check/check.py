@@ -14,6 +14,9 @@ overrides), compared with a reference git ref (upstream geometry):
   3. Fasteners: for every screw described by the SCAD files (ECHO JOINT):
      insert hole depth and wall, plastic under the head, head recess on
      faces that must stay flush, and the screw lengths that fit.
+  4. Tension cams (tension.py): travel and clearance of the tension screw in
+     its slot, cams against the cam walls, and the path of a needle butt at
+     both ends of the travel.
 
 usage:
   python3 tools/geometry_check/check.py [--ref main] [--set camPlateHeight=4 ...]
@@ -31,6 +34,7 @@ from shapely.ops import unary_union
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import scad  # noqa: E402
+import tension  # noqa: E402
 from meshsec import load_stl, section  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
@@ -507,13 +511,27 @@ def main():
 
     log(f'reference: {a.ref}')
     rtree = scad.tree_from_git(REPO, a.ref, a.cache)
-    _, ref, Gr = run(rtree, log)
+    Mr, ref, Gr = run(rtree, log)
     log(f'test: {a.tree} {overrides or ""}')
     ttree = scad.tree_from_dir(a.tree, a.cache, overrides)
     M, test, Gt = run(ttree, log)
     test['interference'] = interference(M)
     test['fasteners'] = fastener_checks(M, M.info['joints'])
     rows = verdicts(test, ref, M.P)
+
+    # tension cams; the reference tree may predate the TENSION echo, and the
+    # cam coordinates are the same in both
+    tinfo = M.info.get('tension')
+    if tinfo is None:
+        rows.append({'check': 'tension cams', 'value': None, 'status': 'FAIL',
+                     'note': 'no ECHO: TENSION from tCamReport()'})
+    else:
+        log('tension cams')
+        tref = tension.run(Mr, tinfo)
+        ttest = tension.run(M, tinfo, tref.get('design_range'))
+        ref['tension'], test['tension'] = tension.summary(tref), tension.summary(ttest)
+        tension.verdict_rows(ttest, tref, lambda name, value, status, note='': rows.append(
+            {'check': name, 'value': value, 'status': status, 'note': note}))
 
     out = a.out or os.path.join(a.cache, 'report')
     os.makedirs(out, exist_ok=True)
@@ -523,6 +541,8 @@ def main():
     if not a.no_plot:
         plot(os.path.join(out, 'sections.png'),
              [(f'reference ({a.ref})', ref, Gr), (f'test {overrides or ""}', test, Gt)])
+        if tinfo is not None:
+            tension.plot(os.path.join(out, 'tension.png'), ttest, f'test {overrides or ""}')
 
     w = max(len(r['check']) for r in rows)
     for r in rows:

@@ -146,7 +146,7 @@ def probe(tree):
     if os.path.exists(tmp):
         os.remove(tmp)
     txt = r.stdout + r.stderr
-    params, joints = {}, []
+    params, joints, tension = {}, [], None
     for line in txt.splitlines():
         m = re.match(r'ECHO: P = (.*)$', line)
         if m:
@@ -158,6 +158,12 @@ def probe(tree):
             keys = ['name', 'points', 'head_side', 'head_part', 'insert_part', 'insert_face_z',
                     'insert_dir', 'head_diam', 'head_height', 'flush', 'thread', 'hole_diam']
             joints.append(dict(zip(keys, v)))
+        m = re.match(r'ECHO: TENSION = (.*)$', line)
+        if m:
+            v = _echo_value(m.group(1))
+            tension = dict(zip(['pivot', 'screw', 'slot_z', 'slot_path'], v))
     res = {'params': params, 'joints': joints}
+    if tension:
+        res['tension'] = tension
     json.dump(res, open(cache, 'w'), indent=1)
     return res

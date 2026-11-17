@@ -3,7 +3,7 @@ import struct
 from functools import reduce
 
 import numpy as np
-from shapely.geometry import LineString, MultiLineString
+from shapely.geometry import LineString, MultiLineString, Polygon
 from shapely.ops import polygonize, unary_union
 
 
@@ -52,7 +52,10 @@ def section(tris, x, eps=1e-4):
     polys = list(polygonize(merged))
     if not polys:
         return None
-    # even-odd fill
+    # even-odd fill. polygonize returns an outer face with its holes already
+    # cut out plus the hole faces, so use only the outer rings, otherwise
+    # holes that are fully enclosed in the section get filled again.
+    polys = [Polygon(p.exterior) for p in polys]
     g = reduce(lambda a, b: a.symmetric_difference(b), polys)
     return g.buffer(0)
 

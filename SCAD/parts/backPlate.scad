@@ -121,8 +121,10 @@ module camRails() {
 }
 
 module tSlots() {
-    // curved cutout for tension adjustment screws
+    // curved cutout for tension adjustment screws, widened from the SVG
+    // (drawn for #4-40 screws) to tensionSlotWidth
         linear_extrude(camPlateHeight + 2)
+        offset(r = (tensionSlotWidth - TSLOT_SVG_WIDTH)/2)
         import("../../SVG/TSlot.svg");
 }
 

@@ -40,6 +40,11 @@ module tCamReport() {
                 "top", "tPointer", "tCam", tPivotTopZ(), -1, hd, hh, false);
     reportJoint("tension screw to cam", [[tensionScrewCoords[0], tensionScrewCoords[1]]],
                 "top", "tPointer", "tCam", tCamTopZ(), -1, hd, hh, false);
+    // for the tension checks: pivot, tension screw, a height inside the back
+    // plate (to cut the slot), and screw positions along the slot
+    echo(TENSION = [[tPivotCoords[0], tPivotCoords[1]], [tensionScrewCoords[0], tensionScrewCoords[1]],
+                    camHeight + camPlateHeight/2,
+                    [for (a = [0:-1:-9]) [tensionScrewAt(a)[0], tensionScrewAt(a)[1]]]]);
 }
 
 

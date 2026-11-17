@@ -20,7 +20,7 @@ and prints one line per check. It exits with status 1 if any check fails.
 Renders are cached in `.geometry_check/`. The report (`report.json` and
 `sections.png`) is written to `.geometry_check/report/`.
 
-The script runs three groups of checks:
+The script runs four groups of checks:
 
 1. **Assembly.** The model leaves `tolerance` gaps between parts, so the
    script first moves each part along z until it touches the part its screws
@@ -46,8 +46,20 @@ The script runs three groups of checks:
    - the depth of the insert or pilot hole;
    - the plastic wall around it;
    - the plastic under the head;
-   - that the head stays below sliding faces;
+   - that the head stays below sliding faces, and that it sits flat;
    - which standard screw lengths fit.
+4. **Tension cams** (`tension.py`, from the `ECHO: TENSION` line of
+   `SCAD/parts/tCam.scad`). The tension cam turns about its pivot while the
+   tension screw slides in the curved slot of the back plate. The script
+   checks:
+   - that an M3 screw slides along the whole travel of the upstream slot,
+     with at least 0.2 mm of clearance;
+   - that the cams do not touch the cam walls at either end of the travel;
+   - the path of a needle butt (1.25 x 3.85 mm, from the technical sketch)
+     through the cams at both ends of the travel. The butt must not jam, and
+     the stitch cam must pull it back as far as in the reference.
+
+   `tension.png` shows the cams and the butt path at both ends.
 
 ## compare_stl.py
 
@@ -63,7 +75,7 @@ part gets one verdict:
 |---|---|
 | `identical` | No difference |
 | `keep` | Only the printed screw holes are wider |
-| `drill holes` | The new part only has bigger or deeper screw holes; the script lists where |
+| `drill holes` | The new part only has bigger or deeper screw holes, or a wider tension slot; the script lists where |
 | `reprint` | The shape changed away from the screw holes |
 
 `check.py` writes the path of the rendered tree to `report.json`

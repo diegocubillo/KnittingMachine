@@ -41,14 +41,12 @@ screwHeight = 18;
 // moves every carriage screw hole.
 screwHeadDiam = 6.75 + tolerance * 2;
 screwHeadHeight = 3.0 + tolerance * 2;
-nutWidth = 7.9;
 
 // - M3 screws (replace the #4-40 screws)
 screwDiamSm = 3.2; // clearance hole
 screwHeightSm = 14.62;
 screwHeadHeightSm = 3.0 + tolerance * 2;
 screwHeadDiamSm = 5.68 + tolerance * 2;
-nutHeight = 2.8;
 
 // - M3 heat-set inserts
 insertDiameter = 4.0; // hole diameter recommended by the insert vendor
@@ -57,6 +55,9 @@ insertDepth = insertLength + 1; // the vendor recommends 1 mm of extra hole dept
 insertWallMin = 1.2; // minimum plastic around an insert hole (used by the checks)
 // Pilot hole for M3 screws that thread straight into the plastic
 screwTapDiam = 2.5;
+// Width of the curved slot in the back plate that the tension screw slides in
+// (upstream: 2.96, for #4-40 screws)
+tensionSlotWidth = screwDiamSm + tolerance;
 
 // ---
 // Needle dimensions
