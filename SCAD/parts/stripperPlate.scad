@@ -1,26 +1,30 @@
 include<../modules/params.scad>;
 use<../modules/carriageScrews.scad>;
 
+// The stripper plate is placed relative to the needle (bottom of the needle
+// slot) and sized with STRIPPER_PLATE_SIZE, so it keeps the same position
+// under the needle hook and the same gap to the needlebed for any
+// camPlateHeight.
 module stripperPlate(col = "blue") {
     $fn = 50;
     color(col)
     hull() {
         // outer L
-        translate([-CAM_PLATE_WIDTH/2,NEEDLE_EXTENSION-4,-camPlateHeight])
-         sphere(d = camPlateHeight/2);
+        translate([-CAM_PLATE_WIDTH/2,NEEDLE_EXTENSION-4,-STRIPPER_PLATE_SIZE])
+         sphere(d = STRIPPER_PLATE_SIZE/2);
         
         // mid L
-         translate([-camPlateHeight * 2.5,NEEDLE_EXTENSION-camPlateHeight/2,-camPlateHeight])
-         sphere(d = camPlateHeight/2);
+         translate([-STRIPPER_PLATE_SIZE * 2.5,NEEDLE_EXTENSION-STRIPPER_PLATE_SIZE/2,-STRIPPER_PLATE_SIZE])
+         sphere(d = STRIPPER_PLATE_SIZE/2);
         
         // inner L
-        translate([-camPlateHeight * 1.5 - 0.5,NEEDLE_EXTENSION-camPlateHeight * 1.5 -2,-camPlateHeight])
-         cylinder(h = camPlateHeight/2, d = camPlateHeight*3, center = true);
+        translate([-STRIPPER_PLATE_SIZE * 1.5 - 0.5,NEEDLE_EXTENSION-STRIPPER_PLATE_SIZE * 1.5 -2,-STRIPPER_PLATE_SIZE])
+         cylinder(h = STRIPPER_PLATE_SIZE/2, d = STRIPPER_PLATE_SIZE*3, center = true);
         
 //        front rounded edge
-        translate([-CAM_PLATE_WIDTH/2 + 55/2, -(camPlateHeight)/2, -(camPlateHeight + 1)/2])
+        translate([-CAM_PLATE_WIDTH/2 + 55/2, -(STRIPPER_PLATE_SIZE)/2, -(STRIPPER_PLATE_SIZE + 1)/2])
     rotate([0,90,0])
-        cylinder(55, d = camPlateHeight + 1, center = true, $fn = 30);
+        cylinder(55, d = STRIPPER_PLATE_SIZE + 1, center = true, $fn = 30);
     }
 }
 
@@ -29,17 +33,17 @@ module stripperPlate(col = "blue") {
 module stripperPlateNose() {
     color("blue")
     hull () {
-//        translate([0, -(camPlateHeight)/2, -(camPlateHeight + 1)/2])
+//        translate([0, -(STRIPPER_PLATE_SIZE)/2, -(STRIPPER_PLATE_SIZE + 1)/2])
 //        rotate([0,90,0])
-//        cylinder(CAM_PLATE_WIDTH, d = camPlateHeight + 1, center = true, $fn = 30);
+//        cylinder(CAM_PLATE_WIDTH, d = STRIPPER_PLATE_SIZE + 1, center = true, $fn = 30);
         
-        translate([-CAM_PLATE_WIDTH/2 + 55/2, -(camPlateHeight)/2, -(camPlateHeight + 1)/2])
+        translate([-CAM_PLATE_WIDTH/2 + 55/2, -(STRIPPER_PLATE_SIZE)/2, -(STRIPPER_PLATE_SIZE + 1)/2])
     rotate([0,90,0])
-        cylinder(55, d = camPlateHeight + 1, center = true, $fn = 30);
+        cylinder(55, d = STRIPPER_PLATE_SIZE + 1, center = true, $fn = 30);
     
         
         // line up with front edge of yarn carrier
-        translate([-CAM_PLATE_WIDTH/2 + 55/2,-(camPlateHeight + 1.5),needleSlotHeight + 2])
+        translate([-CAM_PLATE_WIDTH/2 + 55/2,-(STRIPPER_PLATE_SIZE + 1.5),needleSlotHeight + 2])
         rotate([0,90,0])
         cylinder(55, d = needleSlotHeight + 2.5, center = true, $fn = 50);
     }
@@ -73,9 +77,9 @@ module yarnCarrierCutout() {
             }
         }
         translate([-1,-tolerance, -tolerance])
-        // flat edge
-        translate([0,-(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + camPlateHeight + 2), 2])
-        cube([CAM_PLATE_WIDTH + 4, camPlateHeight + 2, camPlateHeight + 2], center = false);
+        // flat edge (the yarn feeder sits on it)
+        translate([0,-(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE + 2), YARN_FEEDER_Z])
+        cube([CAM_PLATE_WIDTH + 4, STRIPPER_PLATE_SIZE + 2, needleSlotHeight + 10], center = false);
         
         
         yarnCarrierCutout();
@@ -93,9 +97,9 @@ module yarnCarrierCutout() {
             }
         }
         translate([-1,-tolerance, -tolerance])
-        // flat edge
-        translate([0,-(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + camPlateHeight + 2), 2])
-        cube([CAM_PLATE_WIDTH + 4, camPlateHeight + 2, camPlateHeight + 2], center = false);
+        // flat edge (the yarn feeder sits on it)
+        translate([0,-(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE + 2), YARN_FEEDER_Z])
+        cube([CAM_PLATE_WIDTH + 4, STRIPPER_PLATE_SIZE + 2, needleSlotHeight + 10], center = false);
         
         
         yarnCarrierCutout();

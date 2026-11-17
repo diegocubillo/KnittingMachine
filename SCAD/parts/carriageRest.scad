@@ -1,5 +1,6 @@
 include<../modules/params.scad>;
-use<../parts/needleBed.scad>;
+use<../parts/needlebed.scad>;
+include<../modules/inserts.scad>;
 use<../parts/backCover.scad>;
 use<../parts/spongeBar.scad>;
 use<../modules/connector.scad>;
@@ -64,9 +65,17 @@ module carriageRest() {
     }
 }
 
+// The clamp is screwed from below; the screws go into heat-set inserts in
+// the bottom face of the carriage rest (the face the clamp sits against).
+function clampScrewXs() = [- clampWidth/2 + screwHeadDiam*1.5, + clampWidth/2 - screwHeadDiam*1.5];
+function clampScrewYs() = [-(NEEDLE_BED_DEPTH-clampWidth), -clampWidth*2/3];
+
 module clampScrews() {
     // screwholes for clamp
     $fn = 50;
+    for (x = clampScrewXs(), y = clampScrewYs())
+        translate([-CAM_PLATE_WIDTH/2 + x, y, -needleBedHeight + clampThickness])
+        insertHole(0, +1);
     translate([-CAM_PLATE_WIDTH/2,0,-needleBedHeight]) {
         translate([0,-(NEEDLE_BED_DEPTH-clampWidth),0]) {
             translate([- clampWidth/2 + screwHeadDiam*1.5, 0, 0])
@@ -137,3 +146,13 @@ module clampUnit() {
     }
 }
 
+module carriageRestReport() {
+    hd = screwHeadDiamSm - tolerance*2;
+    hh = screwHeadHeight - tolerance*2;
+    // left carriage rest with its clamp, and the mirrored right carriage rest
+    // (all of them are in carriageRest.stl)
+    reportJoint("clamp to carriage rest", [for (x = clampScrewXs(), y = clampScrewYs()) [-gauge - CAM_PLATE_WIDTH/2 + x, y]],
+                "bottom", "carriageRest", "carriageRest", -needleBedHeight + clampThickness, +1, hd, hh, true);
+    reportJoint("right carriage rest (clamp holes)", [for (x = clampScrewXs(), y = clampScrewYs()) [gauge*numNeedles + CAM_PLATE_WIDTH/2 - x, y]],
+                "bottom", "carriageRest", "carriageRest", -needleBedHeight + clampThickness, +1, hd, hh, true);
+}

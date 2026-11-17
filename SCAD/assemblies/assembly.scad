@@ -1,3 +1,3 @@
-include<needleBedAssembly.scad>;
+include<needlebedAssembly.scad>;
 include<carriageAssembly.scad>;
 

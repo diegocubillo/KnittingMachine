@@ -42,13 +42,15 @@ module yarnSlot() {
 
 module yarnFeederPlate() {
     difference() {
-        translate([0,0,2])
+        translate([0,0,YARN_FEEDER_Z])
         color("red") {
             union() {
-                translate([55/2,YARN_DEPOSIT_Y + 2 + tolerance,camPlateHeight/2])
-                cube([55, (NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + camPlateHeight*1.5)-(NEEDLE_BED_DEPTH - COMB + 6 + tolerance), camPlateHeight], center = true);
-            translate([CAM_PLATE_WIDTH - 55/2,YARN_DEPOSIT_Y + 2 + tolerance,camPlateHeight/2])
-                cube([55, (NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + camPlateHeight*1.5)-(NEEDLE_BED_DEPTH - COMB + 6 + tolerance), camPlateHeight], center = true);
+                // side wings, from the front edge to the back plate.
+                // Anchored at the front edge (upstream centred them on a
+                // fixed y, so they shifted when camPlateHeight changed).
+                for (x = [0, CAM_PLATE_WIDTH - 55])
+                    translate([x, YARN_CARRIER_FRONT_Y, 0])
+                    cube([55, YARN_FEEDER_BACK_Y - YARN_CARRIER_FRONT_Y, camPlateHeight]);
                 hull() {
                     translate([CAM_PLATE_WIDTH/2,-(NEEDLE_BED_DEPTH - COMB + 11 + tolerance),camPlateHeight/2])
                     cube([CAM_PLATE_WIDTH/2, 10, camPlateHeight], center = true);
@@ -57,7 +59,8 @@ module yarnFeederPlate() {
                 }
             }
         }
-        translate([CAM_PLATE_WIDTH/2,YARN_DEPOSIT_Y,2])
-        cylinder(h= (5)*2, d = 19 , center = true);
+        // yarn hole, through the whole plate for any camPlateHeight
+        translate([CAM_PLATE_WIDTH/2,YARN_DEPOSIT_Y,YARN_FEEDER_Z])
+        cylinder(h= (camPlateHeight + 5)*2, d = 19 , center = true);
     }
 }
