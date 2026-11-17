@@ -51,6 +51,7 @@ PROFILE_TOL = 0.5                  # mm allowed deviation of stripper plate surf
 INTERFERENCE_MAX = 1.0             # mm^3 (mesh noise)
 HEAD_GRIP = (0.4, 1.0)             # mm plastic under a screw head: fail below, warn below
 HEAD_RECESS_WARN = 0.2             # mm
+HEAD_OVERHANG_WARN = 0.1           # mm a part of the head may float above a lower face
 
 
 # ---------------------------------------------------------------- geometry utils
@@ -300,6 +301,8 @@ def joint_point(M, j, x, y):
     r['head_on'] = seat_part
     r['plastic_under_head'] = round(min(grips), 2)
     r['clamped_stack'] = round(min(stacks), 2)
+    # how far part of the head hangs over a lower surface (0 = fully seated)
+    r['head_overhang'] = round(abs(max(seats) - min(seats)), 2)
 
     # head recess on faces that must stay flush: the outer face of the head
     # part around the head (highest point for heads on top, lowest for heads
@@ -411,6 +414,9 @@ def verdicts(test, ref, P):
         elif g < HEAD_GRIP[1]:
             st = st if st == 'FAIL' else 'warn'
             notes.append(f'{g} mm under head')
+        if f['head_overhang'] > HEAD_OVERHANG_WARN:
+            st = st if st == 'FAIL' else 'warn'
+            notes.append(f'head partly unsupported ({f["head_overhang"]} mm over a lower face)')
         rc = f.get('head_recess')
         if rc is not None and rc < 0:
             st = 'FAIL'

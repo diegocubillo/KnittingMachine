@@ -115,7 +115,7 @@ STRIPPER_PLATE_SIZE = 4;
 YARN_FEEDER_Z = 2;
 // Plastic left under the head of the stripper plate screws, at the bottom of
 // the yarn carrier cover.
-stripperScrewSeat = 0.5;
+stripperScrewSeat = 1.0;
 // The stripper plate screws sit next to the face that the needle hook passes
 // at 0.2 mm. An insert there leaves only 0.8 mm of wall on that face, and
 // pressing it in can bulge the face into the needle path, so by default these
