@@ -44,7 +44,12 @@ module tCamReport() {
     // plate (to cut the slot), and screw positions along the slot
     echo(TENSION = [[tPivotCoords[0], tPivotCoords[1]], [tensionScrewCoords[0], tensionScrewCoords[1]],
                     camHeight + camPlateHeight/2,
-                    [for (a = [0:-1:-9]) [tensionScrewAt(a)[0], tensionScrewAt(a)[1]]]]);
+                    [for (a = [0:-1:-9]) [tensionScrewAt(a)[0], tensionScrewAt(a)[1]]],
+                    // tension lock: notch angles, z range of the pointer and
+                    // of the lock block, lock screw positions (left)
+                    tensionLockAngles, [tPivotTopZ(), tPivotTopZ() + tPointerThickness],
+                    [camHeight + camPlateHeight, camHeight + camPlateHeight + tPointerThickness],
+                    tensionLockScrewsXY()]);
 }
 
 

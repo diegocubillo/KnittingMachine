@@ -4,6 +4,7 @@ include<../modules/utils.scad>;
 use<../parts/backCover.scad>;
 use<../parts/spongeBar.scad>;
 include<../parts/tPointer.scad>;
+include<../parts/tensionLock.scad>;
 include<../modules/carriageScrews.scad>;
 use<../parts/tCam.scad>;
 include<../parts/backPlate.scad>;
@@ -27,4 +28,12 @@ translate(tPivotCoords)
 tPivot(solid = true);
 translate(flip(tPivotCoords))
 mirror([1,0,0])
-tPivot(solid = true); 
+tPivot(solid = true);
+
+// right tension pointer and lock block (the left ones come from
+// tPointer.scad and tensionLock.scad)
+translate([CAM_PLATE_WIDTH, 0, 0])
+mirror([1,0,0]) {
+    tPointer();
+    tensionLock();
+}

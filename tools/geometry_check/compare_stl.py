@@ -38,6 +38,7 @@ DEFAULT_MAP = {
     'backPlate': ['backPlate', 'backPlate_mk2'],
     'tCam': ['tCam', 'tCam_mk2'],
     'tPointer': ['tPointer'],
+    'tensionLock': ['tensionLock'],
     'stripperPlate': ['stripperPlate'],
     'yarnFeeder': ['yarnFeeder'],
     'yarnCarrierCover': ['yarnCarrierCover'],
@@ -148,8 +149,9 @@ def main():
     a = ap.parse_args()
     probe = json.load(open(a.probe or os.path.join(a.new_dir, 'probe.json')))
     points = [tuple(p) for j in probe['joints'] for p in j['points']]
-    # the tension screw slots (left one and its mirror image) also count as
-    # screw holes: a wider slot can be filed out of a printed back plate
+    # the tension screw slots (left one and its mirror image) and the inserts
+    # of the tension lock blocks also count as screw holes of the back plate:
+    # a wider slot can be filed and the inserts drilled in a printed one
     slot_points, labels = [], {}
     if 'tension' in probe:
         W = probe['params']['CAM_PLATE_WIDTH']
@@ -157,6 +159,11 @@ def main():
             for p in ((x, y), (W - x, y)):
                 slot_points.append(p)
                 labels[(round(p[0], 2), round(p[1], 2))] = 'tension slot (left)' if p[0] < W / 2 else 'tension slot (right)'
+        # inserts for the tension lock blocks, both sides
+        for x, y in probe['tension'].get('lock_screws', []):
+            for p in ((x, y), (W - x, y)):
+                slot_points.append(p)
+                labels[(round(p[0], 2), round(p[1], 2))] = f'tension lock insert ({p[0]:.2f}, {p[1]:.2f})'
     mapping = {k: list(v) for k, v in DEFAULT_MAP.items()}
     for m in a.map:
         k, v = m.split('=', 1)

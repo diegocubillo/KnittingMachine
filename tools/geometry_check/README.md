@@ -59,6 +59,11 @@ The script runs four groups of checks:
      through the cams at both ends of the travel. The butt must not jam, and
      the stitch cam must pull it back as far as in the reference.
 
+   - the tension lock: the pointer tip must fit each notch of the lock
+     block without touching it, the block must stop the pointer turning
+     (play in degrees), the tip must go far enough into the block, and the
+     pointer, lifted to change the setting, must clear the lock screw heads.
+
    `tension.png` shows the cams and the butt path at both ends.
 
 ## compare_stl.py

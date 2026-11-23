@@ -14,7 +14,7 @@ import tarfile
 import io
 
 PARTS = ['needlebed', 'backCover', 'spongeBar', 'carriageRest', 'backPlate', 'tCam', 'tPointer',
-         'stripperPlate', 'yarnFeeder', 'yarnCarrierCover']
+         'tensionLock', 'stripperPlate', 'yarnFeeder', 'yarnCarrierCover']
 
 PARAMS = ['gauge', 'tolerance', 'needleSlotHeight', 'needleBedHeight', 'NEEDLE_BED_DEPTH',
           'NEEDLE_EXTENSION', 'NEEDLE_LEG_HEIGHT', 'HOOK_DIAM', 'COMB', 'camHeight',
@@ -128,7 +128,8 @@ def probe(tree):
     reports = [('../modules/carriageScrews.scad', 'carriageScrewsReport'),
                ('../modules/needlebedScrews.scad', 'needleBedScrewsReport'),
                ('../parts/tCam.scad', 'tCamReport'),
-               ('../parts/carriageRest.scad', 'carriageRestReport')]
+               ('../parts/carriageRest.scad', 'carriageRestReport'),
+               ('../parts/tensionLock.scad', 'tensionLockReport')]
     src = ['include<../modules/params.scad>;']
     for f, m in reports:
         src.append(f'use<{f}>;')
@@ -161,7 +162,8 @@ def probe(tree):
         m = re.match(r'ECHO: TENSION = (.*)$', line)
         if m:
             v = _echo_value(m.group(1))
-            tension = dict(zip(['pivot', 'screw', 'slot_z', 'slot_path'], v))
+            tension = dict(zip(['pivot', 'screw', 'slot_z', 'slot_path', 'lock_angles', 'pointer_z',
+                                'lock_z', 'lock_screws'], v))
     res = {'params': params, 'joints': joints}
     if tension:
         res['tension'] = tension

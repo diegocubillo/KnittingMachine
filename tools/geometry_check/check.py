@@ -44,7 +44,7 @@ BUTT_BACK_TO_TIP = 78.6
 HOOK_LEN = 9.5
 
 BED = ['needlebed', 'spongeBar', 'backCover']
-CARRIAGE = ['backPlate', 'yarnCarrierCover', 'yarnFeeder', 'stripperPlate', 'tCam', 'tPointer']
+CARRIAGE = ['backPlate', 'yarnCarrierCover', 'yarnFeeder', 'stripperPlate', 'tCam', 'tPointer', 'tensionLock']
 GROUPS = {'bed': BED, 'carriage': CARRIAGE, 'rest': ['carriageRest']}
 STD_SCREW_LENGTHS = [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40]
 
@@ -156,7 +156,7 @@ def solve_assembly(M):
     dz['yarnCarrierCover'] = dsub
     dz['yarnFeeder'] = dsub + dfeed
     dz['stripperPlate'] = dsub + dplate
-    for p in ('tCam', 'tPointer'):
+    for p in ('tCam', 'tPointer', 'tensionLock'):
         dz[p] = dz['backPlate']
     M.dz.update(dz)
     return {'dz': {k: round(float(v), 3) for k, v in dz.items()},
@@ -168,7 +168,8 @@ def interference(M):
     area (mm^2, side view) of the carriage, swept along x, with the bed."""
     W = M.P['CAM_PLATE_WIDTH']
     xs = np.arange(0.5, W, 1.0)
-    parts = ['backPlate', 'yarnCarrierCover', 'yarnFeeder', 'stripperPlate', 'tCam']
+    parts = ['backPlate', 'yarnCarrierCover', 'yarnFeeder', 'stripperPlate', 'tCam', 'tPointer', 'tensionLock']
+    parts = [p for p in parts if p in M.mesh]
     res = {}
     for i, a in enumerate(parts):
         for b in parts[i + 1:]:
@@ -530,8 +531,10 @@ def main():
         tref = tension.run(Mr, tinfo)
         ttest = tension.run(M, tinfo, tref.get('design_range'))
         ref['tension'], test['tension'] = tension.summary(tref), tension.summary(ttest)
-        tension.verdict_rows(ttest, tref, lambda name, value, status, note='': rows.append(
-            {'check': name, 'value': value, 'status': status, 'note': note}))
+        add = lambda name, value, status, note='': rows.append(  # noqa: E731
+            {'check': name, 'value': value, 'status': status, 'note': note})
+        tension.verdict_rows(ttest, tref, add)
+        tension.lock_rows(ttest, add)
 
     out = a.out or os.path.join(a.cache, 'report')
     os.makedirs(out, exist_ok=True)

@@ -147,6 +147,26 @@ stripperLeadInRadius = 3;   // rounding of the chamfer corners in plan view
 // y of the back edge of the yarn feeder (the front edge of the back plate)
 YARN_FEEDER_BACK_Y = -(NEEDLE_BED_DEPTH - COMB + 6 + tolerance);
 
+// Tension lock. The tension pointer (tPointer) is screwed to the tension cam
+// pivot and to the tension screw, so it turns with the cam. Its tip drops into
+// one of the notches of a block (tensionLock) screwed on top of the back
+// plate, which locks the cam at that setting. To change the setting, loosen
+// the two pointer screws, lift the tip out of the notch, turn the cam, drop
+// the tip into another notch and tighten the screws again.
+// - tension cam rotation of each notch, in degrees (0 = the position
+//   modelled, the tightest setting; the slot allows about 0 to -9)
+tensionLockAngles = [0, -4.5, -9];
+// - tension pointer
+tPointerThickness = 3;      // also the height of the lock block
+tPointerWidth = 8;          // M3 heads are 5.5 wide
+tPointerLength = 60;        // pivot to the (sharp) tip
+tPointerTipAngle = 40;      // included angle of the tip
+tPointerTipRadius = 0.5;    // rounding of the tip
+// - lock block
+tensionLockDepth = 4;       // how far the tip goes into the block
+tensionLockWall = 3;        // plastic behind the bottom of the notches
+tensionLockClearance = tolerance;   // gap between the tip and the notch
+
 railDepth = 8;
 railHeight = 8; // ???
 xOffset = 16.5;

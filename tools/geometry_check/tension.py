@@ -4,7 +4,10 @@ and the tension cam:
 - travel of the tension screw along its slot in the back plate, and the
   clearance of an M3 screw in the slot;
 - the tension cams at both ends of the travel must not touch the cam walls;
-- path of a needle butt through the cams at both ends of the travel.
+- path of a needle butt through the cams at both ends of the travel;
+- the tension lock: the pointer tip must fit each notch of the lock block,
+  the block must stop the pointer turning, and the lifted pointer must clear
+  the heads of the lock screws.
 
 The tension cam turns about its pivot; the tension screw (in an insert in the
 cam) slides in the curved slot of the back plate. Only the left cam is
@@ -22,6 +25,9 @@ CAM_Z = 5.0            # cut through the cams (z 2..15) and the needle butts (to
 SCREW_D = 3.0          # M3 shank
 OLD_SCREW_D = 2.84     # #4-40 shank, for the travel of the upstream slot
 SLOT_CLEARANCE = 0.2   # mm the slot must be wider than the screw (printed slots come out narrow)
+HEAD_D = 5.5           # M3 socket head
+LOCK_PLAY_MAX = 1.0    # deg the pointer may turn in a notch before the block stops it
+LOCK_ENGAGEMENT_MIN = 1.5   # mm of pointer tip height inside the block
 BUTT_W = 1.25          # NEEDLE_WIDTH, along x
 BUTT_L = 3.85          # butt length along y, measured on the technical sketch
 STEP = 0.05            # mm, butt simulation step along x
@@ -149,6 +155,40 @@ def run(M, info, design_range=None):
         e['cams'] = (L, R)
         res['ends'][a] = e
     res['walls'], res['slot'], res['pivot'], res['screw'], res['W'] = walls, slot, pivot, screw, W
+    res['lock'] = lock(M, info, res['travel_m3'])
+    return res
+
+
+def lock(M, info, travel):
+    """Tension lock: pointer tip in the notches of the lock block (left side)."""
+    if 'lock_angles' not in info or 'tPointer' not in M.mesh or 'tensionLock' not in M.mesh:
+        return None
+    pz, lz = info['pointer_z'], info['lock_z']
+    lo, hi = max(pz[0], lz[0]), min(pz[1], lz[1])
+    res = {'angles_deg': info['lock_angles'], 'engagement': round(hi - lo, 2),
+           'lift': round(lz[1] - pz[0], 2), 'notches': {}}
+    pivot = tuple(info['pivot'])
+    if hi - lo > 0.1:
+        z = (lo + hi) / 2
+        ptr, blk = plan(M.mesh['tPointer'], z), plan(M.mesh['tensionLock'], z)
+
+        def overlap(a):
+            return affinity.rotate(ptr, a, origin=pivot).intersection(blk).area
+
+        for a in info['lock_angles']:
+            e = {'overlap_mm2': round(overlap(a), 3)}
+            for sgn, k in ((1, 'play_ccw'), (-1, 'play_cw')):
+                d = 0.0
+                while d < 3.0 and overlap(a + sgn * (d + 0.02)) < 0.01:
+                    d += 0.02
+                e[k] = round(d, 2)          # 3.0: the block does not stop the pointer
+            res['notches'][a] = e
+    # the pointer, lifted above the block, turning over the whole travel
+    heads = unary_union([Point(p).buffer(HEAD_D / 2, 32) for p in info['lock_screws']])
+    ptr = plan(M.mesh['tPointer'], (pz[0] + pz[1]) / 2)
+    angles = np.arange(travel[0], travel[1] + 0.01, 0.1) if travel else info['lock_angles']
+    res['pointer_x_screw_heads_mm2'] = round(max(
+        affinity.rotate(ptr, a, origin=pivot).intersection(heads).area for a in angles), 3)
     return res
 
 
@@ -158,6 +198,8 @@ def summary(res):
     out['travel_ends_cam_x_walls_mm2'] = {str(k): v for k, v in res.get('travel_ends_cam_x_walls_mm2', {}).items()}
     out['ends'] = {str(a): {k: v for k, v in e.items() if k not in ('path', 'cams')}
                    for a, e in res.get('ends', {}).items()}
+    if res.get('lock'):
+        out['lock'] = dict(res['lock'], notches={str(a): e for a, e in res['lock']['notches'].items()})
     return out
 
 
@@ -185,6 +227,29 @@ def verdict_rows(test, ref, add):
         d = None if r is None else abs(e['butt_back_max'] - r)
         add(f'{name}: butt pulled back to y', e['butt_back_max'],
             'FAIL' if d is None or d > 0.05 else 'ok', f'reference {r}')
+
+
+def lock_rows(test, add):
+    lk = test.get('lock')
+    if lk is None:
+        add('tension lock', None, 'FAIL', 'no tPointer / tensionLock render or no lock data')
+        return
+    tr = test['travel_m3']
+    for a in lk['angles_deg']:
+        ok = tr is not None and tr[0] - 0.01 <= a <= tr[1] + 0.01
+        add(f'tension lock notch at {a:+.1f} deg: inside the M3 travel', a, 'ok' if ok else 'FAIL', f'travel {tr}')
+    add('tension lock: pointer tip height inside the block', lk['engagement'],
+        'FAIL' if lk['engagement'] < LOCK_ENGAGEMENT_MIN else 'ok', f'min {LOCK_ENGAGEMENT_MIN}')
+    for a, e in lk['notches'].items():
+        add(f'tension lock notch at {a:+.1f} deg: pointer x block [mm2]', e['overlap_mm2'],
+            'FAIL' if e['overlap_mm2'] > 0.01 else 'ok')
+        play = max(e['play_ccw'], e['play_cw'])
+        add(f'tension lock notch at {a:+.1f} deg: play [deg]', f'+{e["play_ccw"]}/-{e["play_cw"]}',
+            'FAIL' if play >= 3.0 else 'warn' if play > LOCK_PLAY_MAX else 'ok',
+            'the block does not stop the pointer' if play >= 3.0 else '')
+    v = lk['pointer_x_screw_heads_mm2']
+    add('tension lock: lifted pointer x lock screw heads [mm2]', v, 'FAIL' if v > 0.01 else 'ok')
+    add('tension lock: lift the pointer by [mm] to change the setting', lk['lift'], 'ok')
 
 
 def plot(path, res, title=''):

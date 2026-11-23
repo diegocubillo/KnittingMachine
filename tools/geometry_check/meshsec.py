@@ -32,6 +32,10 @@ def section(tris, x, eps=1e-4):
     """Cross-section of a closed mesh at plane x (y,z coords). Returns shapely geometry."""
     x = x + eps
     xs = tris[:, :, 0]
+    # a vertex on the plane gives degenerate segments and the outline may not
+    # close: move the plane a little until no vertex lies on it
+    while np.any(np.abs(xs - x) < 1e-6):
+        x += eps * 0.37
     above = xs > x
     cnt = above.sum(1)
     m = (cnt == 1) | (cnt == 2)

@@ -5,6 +5,7 @@ use<backCover.scad>;
 use<spongeBar.scad>;
 use<tCam.scad>;
 use<../modules/carriageScrews.scad>;
+use<tensionLock.scad>;
 
 difference() {
     color("purple", 0.5)
@@ -53,6 +54,9 @@ difference() {
         import("../../SVG/BackWall_mk2.svg"); 
     }
     carriageScrews();
+    // inserts for the tension lock blocks (they replace the upstream
+    // tension marks)
+    tensionLockInserts();
 }
 
 //!backPlate();
@@ -74,23 +78,6 @@ module backPlate() {
         translate(flip(tPivotCoords))
         mirror([1,0,0])
         tPivot(tol = tolerance);
-        
-        // tension adjustment marks
-        translate([flip(tPivotCoords)[0],tPivotCoords[1],camHeight + camPlateHeight - 1 + tolerance]) {
-            for (i = [0:2:8]) {
-                mirror([1,0,0])
-                rotate([0,0,360-30.06 - i*tensionAngleInc])
-                translate([tensionMarksDist,0,0])               
-                #cube([6,0.5,1], center = false); 
-            }
-        } 
-        translate([tPivotCoords[0],tPivotCoords[1],camHeight + camPlateHeight - 1 + tolerance]) {
-            for (i = [0:2:8]) {
-                rotate([0,0,360-30.06 - i*tensionAngleInc])
-                translate([tensionMarksDist,0,0])
-                #cube([6,0.5,1], center = false); 
-            }
-        } 
     }
 }
 
