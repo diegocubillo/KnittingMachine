@@ -117,13 +117,33 @@ YARN_FEEDER_Z = 2;
 // Plastic left under the head of the stripper plate screws, at the bottom of
 // the yarn carrier cover.
 stripperScrewSeat = 1.0;
-// The stripper plate screws sit next to the face that the needle hook passes
-// at 0.2 mm. An insert there leaves only 0.8 mm of wall on that face, and
-// pressing it in can bulge the face into the needle path, so by default these
-// screws thread straight into a pilot hole (as upstream did with #4-40).
-stripperPlateInserts = false;
+// Stripper plate mount. The stripper plate is screwed up to the yarn feeder
+// through a flat strip on top of its front post; the needle hook passes the
+// back face of that post. Upstream the screws were 3.75 mm in front of the
+// hook tip (hold position), which left 0.8 mm of wall between an insert and
+// that face and only about 4 mm of contact strip. The yarn feeder, the yarn
+// carrier cover and the post now reach further forward, so the screws can
+// sit further from the hook, on a wider strip, with inserts.
+// - y distance from the hook tip (hold position) forward to the screws
+stripperScrewSetback = 6;
+stripperScrewY = -(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + stripperScrewSetback);
+// - plastic between the head recess of those screws and the front edge of
+//   the yarn carrier cover (it breaks easily when removing print supports)
+coverFrontMargin = 2;
+// - thread the stripper plate screws into inserts (true) or into a pilot
+//   hole in the plastic (false)
+stripperPlateInserts = true;
 // y of the front edge of the yarn feeder and of the yarn carrier cover
-YARN_CARRIER_FRONT_Y = -(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE + 2);
+YARN_CARRIER_FRONT_Y = stripperScrewY - screwHeadDiamSm/2 - coverFrontMargin;
+// how far that edge (and the front post of the stripper plate) reaches in
+// front of the upstream design
+STRIPPER_MOUNT_EXTENSION = -(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE + 2) - YARN_CARRIER_FRONT_Y;
+
+// Lead-in at the outer ends of the stripper plate blade: a 45 degree chamfer
+// in plan view, so the blade pushes the knitting towards the needlebed
+// instead of catching it with a square end. 0 = square ends (upstream).
+stripperLeadIn = 20;        // depth along y
+stripperLeadInRadius = 3;   // rounding of the chamfer corners in plan view
 // y of the back edge of the yarn feeder (the front edge of the back plate)
 YARN_FEEDER_BACK_Y = -(NEEDLE_BED_DEPTH - COMB + 6 + tolerance);
 

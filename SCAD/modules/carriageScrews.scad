@@ -14,7 +14,7 @@ function camplateScrewsXY() = [
 function stripperScrewsXY() = [
     for (x = [screwHeadDiamSm*1.5, screwHeadDiamSm*1.5 + 35,
               CAM_PLATE_WIDTH - screwHeadDiamSm*1.5 - 35, CAM_PLATE_WIDTH - screwHeadDiamSm*1.5])
-        [x, -(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE - 0.25)]
+        [x, stripperScrewY]
 ];
 function feederScrewsXY() = [
     for (x = [screwHeadDiam*1.5, screwHeadDiam*1.5 + 35,

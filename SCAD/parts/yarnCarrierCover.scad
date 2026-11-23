@@ -36,10 +36,11 @@ module yarnCarrierCover() {
         rotate([0,90,0])
         cylinder(CAM_PLATE_WIDTH, d = camPlateHeight, center = true, $fn = 30);
 
-        // flat edge, over the stripper plate screws. Its top is 0.25 mm above
-        // the seat of the screw heads, so the heads sit on a flat floor
-        // (with stripperScrewSeat = 0.5 this is the upstream shape).
-        translate([0, -(NEEDLE_BED_DEPTH + NEEDLE_EXTENSION + STRIPPER_PLATE_SIZE*1.5), YARN_FEEDER_Z - 0.25])
-        cube([CAM_PLATE_WIDTH, STRIPPER_PLATE_SIZE, stripperScrewSeatZ() + 0.25 - (YARN_FEEDER_Z - 0.25)]);
+        // flat edge, over the stripper plate screws, from the front edge to
+        // `coverFrontMargin` behind the head recesses. Its top is 0.25 mm
+        // above the seat of the screw heads, so the heads sit on a flat floor.
+        translate([0, YARN_CARRIER_FRONT_Y, YARN_FEEDER_Z - 0.25])
+        cube([CAM_PLATE_WIDTH, (stripperScrewY + screwHeadDiamSm/2 + coverFrontMargin) - YARN_CARRIER_FRONT_Y,
+              stripperScrewSeatZ() + 0.25 - (YARN_FEEDER_Z - 0.25)]);
     }
 }
