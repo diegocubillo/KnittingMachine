@@ -59,6 +59,16 @@ screwTapDiam = 2.5;
 // (upstream: 2.96, for #4-40 screws)
 tensionSlotWidth = screwDiamSm + tolerance;
 
+// - M8 hex bolt and nut of the table clamps (ISO 4017 / ISO 4032). The nut
+//   sits in the bottom jaw of the clamp; the bolt goes up through it and
+//   pushes the clamp head against the underside of the table. The bolt head
+//   sits in the clamp knob.
+clampBoltDiam = 8;
+clampBoltHeadWidth = 12.8;      // across flats
+clampBoltHeadHeight = 5.5;
+clampNutWidth = 12.82;          // across flats
+clampNutHeight = 6.6;
+
 // ---
 // Needle dimensions
 // - Brother needles

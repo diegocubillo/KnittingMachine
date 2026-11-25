@@ -11,6 +11,9 @@ clampWidth = 50;
 clampDepth = NEEDLE_BED_DEPTH-clampWidth/2; 
 clampThickness = 6;
 clampHollow = 85; // adjust this for your table thickness
+// bottom jaw: the whole M8 nut sits in a pocket open to the top face, on a
+// 4 mm floor
+clampJawThickness = clampNutHeight + tolerance + 4;
 
 // LEFT
 union() {
@@ -122,28 +125,37 @@ module clampUnit() {
         translate([-CAM_PLATE_WIDTH/2 , -NEEDLE_BED_DEPTH + clampThickness/2 + 12, -(needleBedHeight - tolerance) - clampHollow/2]) {
                 cube([clampWidth - tolerance*2, clampThickness, clampHollow], center = true);
             
-            // rounded edge
-            translate([0,0,-(clampHollow + clampThickness)/2])
+            // rounded edge, at the bottom of the jaw
+            translate([0,0,-clampHollow/2 - clampJawThickness + clampThickness/2])
             rotate([0,90,0])
             cylinder(clampWidth - tolerance*2, d = clampThickness, center = true, $fn = 30);
         }  
     }
     difference() {
         // bottom
-        translate([-CAM_PLATE_WIDTH/2 , -NEEDLE_BED_DEPTH + clampDepth/2 +  clampThickness/2, -(needleBedHeight - tolerance) - clampHollow - clampThickness/2 ])
-        cube([clampWidth - tolerance*2, clampDepth - 25, clampThickness], center = true);
+        translate([-CAM_PLATE_WIDTH/2 , -NEEDLE_BED_DEPTH + clampDepth/2 +  clampThickness/2, clampJawTopZ() - clampJawThickness/2])
+        cube([clampWidth - tolerance*2, clampDepth - 25, clampJawThickness], center = true);
         
-        
-        translate([-CAM_PLATE_WIDTH/2,-clampWidth*2/3 - 18,-(needleBedHeight - tolerance) - clampHollow - clampThickness/2]) {
+        translate([clampBoltXY()[0], clampBoltXY()[1], clampJawTopZ()]) {
             // bolt hole
-            cylinder(h = clampThickness*2, d = 8, center = true, $fn = 50);
+            cylinder(h = clampJawThickness*3, d = clampBoltDiam + tolerance*2, center = true, $fn = 50);
             
-            // nut cutout
-            translate([-14.491/2,-12.55/2,clampThickness/2]) // use w/h specs from svg
-            #linear_extrude(6.75, center = true)
-            import("../../SVG/HexNut.svg");
+            // nut pocket
+            translate([0, 0, -(clampNutHeight + tolerance)])
+            hexagon(clampNutWidth + tolerance*2, clampNutHeight + tolerance + 1);
         }        
     }
+}
+
+// position of the clamp bolt (in the frame of clampUnit()) and z of the top
+// face of the bottom jaw (the table goes between it and the carriage rest)
+function clampBoltXY() = [-CAM_PLATE_WIDTH/2, -clampWidth*2/3 - 18];
+function clampJawTopZ() = -(needleBedHeight - tolerance) - clampHollow;
+function clampJawBottomZ() = clampJawTopZ() - clampJawThickness;
+
+// hexagonal prism, `af` across flats, standing on z = 0
+module hexagon(af, h) {
+    cylinder(h = h, d = af / cos(30), $fn = 6);
 }
 
 module carriageRestReport() {
